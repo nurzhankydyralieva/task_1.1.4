@@ -13,6 +13,15 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 public class Util {
+    private static Util instance;
+
+    public static Util getInstance() {
+        if (instance == null) {
+            instance = new Util();
+        }
+        return instance;
+    }
+
     public static Connection getConnection() {
         String url = "jdbc:mysql://localhost:3306/task_1_1_4?autoReconnect=true&useSSL=false";
         String userName = "bazilio";
