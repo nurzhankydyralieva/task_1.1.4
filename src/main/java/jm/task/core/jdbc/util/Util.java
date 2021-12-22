@@ -2,10 +2,10 @@ package jm.task.core.jdbc.util;
 
 import jm.task.core.jdbc.model.User;
 import org.hibernate.SessionFactory;
+import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
-import org.hibernate.service.ServiceRegistry;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,15 +13,6 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 public class Util {
-    private static Util instance;
-
-    public static Util getInstance() {
-        if (instance == null) {
-            instance = new Util();
-        }
-        return instance;
-    }
-
     public static Connection getConnection() {
         String url = "jdbc:mysql://localhost:3306/task_1_1_4?autoReconnect=true&useSSL=false";
         String userName = "bazilio";
@@ -38,6 +29,7 @@ public class Util {
     }
 
     private static SessionFactory sessionFactory;
+    private static StandardServiceRegistry serviceRegistry;
 
     public static SessionFactory getSessionFactory() {
         if (sessionFactory == null) {
@@ -56,14 +48,23 @@ public class Util {
 
                 configuration.setProperties(settings);
                 configuration.addAnnotatedClass(User.class);
-                ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+                serviceRegistry = new StandardServiceRegistryBuilder()
                         .applySettings(configuration.getProperties()).build();
                 sessionFactory = configuration.buildSessionFactory(serviceRegistry);
                 System.out.println("Connected");
             } catch (Exception e) {
-                e.printStackTrace();
+                System.out.println("SessionFactory creation failed");
+                if (serviceRegistry != null) {
+                    StandardServiceRegistryBuilder.destroy(serviceRegistry);
+                }
             }
         }
         return sessionFactory;
+    }
+
+    public static void connectionClose() {
+        if (serviceRegistry != null) {
+            StandardServiceRegistryBuilder.destroy(serviceRegistry);
+        }
     }
 }
